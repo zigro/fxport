@@ -207,6 +207,8 @@ static HAL_StatusTypeDef Flash_ErasePage(void* flashptr)
 
 uint32_t stm32_FlashErrorCode = 0;
 
+
+#if 0
 #define	FLASH_WaitForLastOperation(Timeout)	stm32_FLASH_WaitForLastOperation(Timeout)
 
 static uint32_t stm32_FLASH_SR_BSY(void)
@@ -226,7 +228,7 @@ static uint32_t stm32_FLASH_SR_CFGBSY(void)
     return (FLASH->SR & FLASH_SR_CFGBSY);
 }
 
-static status_t stm32_FLASH_WaitForLastOperation(uint32_t Timeout)
+static HAL_StatusTypeDef stm32_FLASH_WaitForLastOperation(uint32_t Timeout)
 {
     /* Wait for the FLASH operation to complete by polling on BUSY flag to be reset.
        Even if the FLASH operation fails, the BUSY flag will be reset and an error
@@ -234,7 +236,7 @@ static status_t stm32_FLASH_WaitForLastOperation(uint32_t Timeout)
 
     /* Wait if any operation is ongoing */
     if (WaitWhile(stm32_FLASH_SR_BSY ,Timeout) != STATUS_OK){
-      return STATUS_TIMEOUT;
+      return HAL_TIMEOUT;
     }
 
     /* check flash errors */
@@ -246,11 +248,14 @@ static status_t stm32_FLASH_WaitForLastOperation(uint32_t Timeout)
     {
         /*Save the error code*/
         stm32_FlashErrorCode = error;
-        return STATUS_FLASH_ERROR;
+        return HAL_ERROR;
     }
-    return WaitWhile(stm32_FLASH_SR_CFGBSY ,Timeout);
+    return (WaitWhile(stm32_FLASH_SR_CFGBSY ,Timeout) != STATUS_OK)? HAL_TIMEOUT: HAL_OK;
 }
+#else
+#define	FLASH_WaitForLastOperation(Timeout)	FLASH_WaitForLastOperation(Timeout)
 
+#endif
 /*---------------------------------------------------------------------------------------------
 //	HAL_StatusTypeDef Flash_ErasePage(void* flashptr)
 //
@@ -259,22 +264,23 @@ static status_t stm32_FLASH_WaitForLastOperation(uint32_t Timeout)
 ---------------------------------------------------------------------------------------------*/
 __STATIC_INLINE status_t stm32_FlashErasePage(uint32_t nFlashPage)
 {
+	status_t status = STATUS_OK;
 //  /* Process Locked */
 //  __HAL_LOCK(&pFlash);
 
 	/* Wait for last operation to be completed */
-	if (FLASH_WaitForLastOperation(FLASH_TIMEOUT_VALUE) != STATUS_OK)
+	if (FLASH_WaitForLastOperation(FLASH_TIMEOUT_VALUE) != HAL_OK)
 		return STATUS_FLASH_ERROR;
 	/* Start erase page */
 	//FLASH_PageErase(FLASH_BANK_1, nFlashPage);
 	_FLASH_PageErase(nFlashPage);
-	if (FLASH_WaitForLastOperation(FLASH_TIMEOUT_VALUE) != STATUS_OK)
-		return STATUS_FLASH_ERASE_TIMEOUT;
+	if (FLASH_WaitForLastOperation(FLASH_TIMEOUT_VALUE) != HAL_OK)
+		status = STATUS_FLASH_ERASE_TIMEOUT;
 	/* If operation is completed or interrupted, disable the Page Erase Bit */
 	CLEAR_BIT(FLASH->CR, FLASH_CR_PER);
 //  /* Process Unlocked */
 //  __HAL_UNLOCK(&pFlash);
-	return STATUS_OK;
+	return status;
 }
 
 
@@ -290,6 +296,7 @@ status_t stm32_FlashErase(const void* flashptr)
     return status;
 }
 
+#if 0
 /**
   * @brief  Program double-word (64-bit) at a specified address.
   * @param  Address Specifies the address to be programmed.
@@ -342,7 +349,17 @@ static status_t stm32_HAL_FLASH_Program(uint32_t Address, uint64_t Data)
 	return status;
 }
 #endif
+#endif
 
+/* STM32H5xx
+ * Up to 2 Mbytes of nonvolatile memory, divided into two 1 Mbyte banks
+ * • Flash memory read operations supporting multiple lengths: 128 bits, 64 bits, 32 bits,
+ *    16 bits, or one byte
+ * • Flash memory programming by 128 (user area, OBKeys) and by 16 bits (OTP and flash
+ *    high-cycle data area)
+ * • 8-Kbyte sector erase, bank erase and dual-bank mass erase
+ * •
+ */
 status_t stm32_FlashWrite(void const* flashptr, void const* buffer, size_t buffer_length)
 {
     status_t status = STATUS_OK;

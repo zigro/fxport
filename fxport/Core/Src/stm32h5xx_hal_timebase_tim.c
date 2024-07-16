@@ -18,8 +18,9 @@
 /* USER CODE END Header */
 
 /* Includes ------------------------------------------------------------------*/
-#include "stm32h5xx_hal.h"
-#include "stm32h5xx_hal_tim.h"
+//#include "stm32h5xx_hal.h"
+//#include "stm32h5xx_hal_tim.h"
+#include "mcu.h"
 
 /* Private typedef -----------------------------------------------------------*/
 /* Private define ------------------------------------------------------------*/

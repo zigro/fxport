@@ -68,6 +68,39 @@ typedef enum _STATUS_T
         STATUS_MNGPRM_NOSPACE,
 } status_t;
 
+typedef enum _STATUS_T
+{
+        STATUS_OK       = 0x00U,
+        STATUS_ERROR    = 0x01U,
+        STATUS_BUSY     = 0x02U,
+        STATUS_TIMEOUT  = 0x03U,
+        STATUS_HARDFAULT	= 0xFAU,
+
+        STATUS_CLOCK_ERROR = 0x0101U,
+        STATUS_CLOCK_HSION_TIMEOUT,
+        STATUS_CLOCK_HSEON_TIMEOUT,
+        STATUS_CLOCK_PLLON_TIMEOUT,
+        STATUS_CLOCKSRC_HSI_TIMEOUT,
+        STATUS_CLOCKSRC_HSE_TIMEOUT,
+        STATUS_CLOCKSRC_PLL_TIMEOUT,
+
+        STATUS_SCI_ERROR = 0x0201U,
+        STATUS_SCI_EMPTY,
+        STATUS_SCI_BUSY,
+        STATUS_SCI_ILLIGAL_PARAM_DATAWIDTH,
+        STATUS_SCI_ILLIGAL_PARAM_PARITY,
+        STATUS_SCI_ILLIGAL_PARAM_STOPBITS,
+        STATUS_SCI_ILLIGAL_PARAM_BAUDRATE,
+
+        STATUS_FLASH_ERROR = 0x0301U,
+        STATUS_FLASH_ERASE_TIMEOUT,
+
+        STATUS_MNGPRM_ERROR = 0x0401U,
+        //* ManageParam 格納用FLASHメモリにレコードが存在しない
+        STATUS_MNGPRM_UNINITIALIZED,
+        //* ManageParam 格納用FLASHメモリに未使用レコードが存在しない
+        STATUS_MNGPRM_NOSPACE,
+} status_t2;
 
 
 #ifdef __cplusplus
